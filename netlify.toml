@@ -1,9 +1,9 @@
 [build]
   command = "python app.py"  
   functions = "netlify_functions"  # A directory where serverless functions will be stored
+  publish = "static"
 
 [build.environment]
   FLASK_ENV = "production"  # Set the Flask environment to production
 
-[build.publish]
-  directory = "static"  # The directory where Netlify will look for static assets
+
