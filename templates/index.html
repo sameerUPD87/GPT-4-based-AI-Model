@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amena</title>
+    <style>
+        body {
+            background-color: #f2f2f2;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #container {
+            max-width: 400px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center horizontally */
+            justify-content: center; /* Center vertically */
+        }
+        h1 {
+            color: #007BFF;
+            font-size: 24px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            display: block;
+            margin: 0 auto;
+            padding: 12px 24px;
+            background-color: #007BFF;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #speechButton {
+            background-color: #FF8800;
+        }
+        #speechButton:hover {
+            background-color: #FF6600;
+        }
+        #response {
+            margin: 20px 0;
+            padding: 12px;
+            background-color: #f2f2f2;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>Amena</h1>
+        <input type="text" id="user_input" placeholder="Enter your query">
+        <button onclick="getAnswer()">Get Answer</button>
+        <button id="speechButton" onclick="startSpeechRecognition()">Start Speech Recognition</button>
+        <div id="response"></div>
+        <button id="clearButton" onclick="clearResponse()">Clear Response</button>
+    </div>
+
+    <script>
+        var recognition;
+        var synth = window.speechSynthesis;
+
+        function getAnswer() {
+            var userText = document.getElementById('user_input').value;
+            var responseDiv = document.getElementById('response');
+
+            fetch('/answer', {
+                method: 'POST',
+                body: new URLSearchParams({ 'user_text': userText }),
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            })
+            .then(response => response.text())
+            .then(data => {
+                responseDiv.innerHTML = data;
+                speakResponse(data);
+            });
+        }
+
+        function startSpeechRecognition() {
+            var speechButton = document.getElementById('speechButton');
+            speechButton.disabled = true;
+            speechButton.innerText = "Listening...";
+
+            var user_input = document.getElementById('user_input');
+            recognition = new webkitSpeechRecognition();
+            recognition.onresult = function(event) {
+                var result = event.results[0][0].transcript;
+                user_input.value = result;
+                getAnswer();  // Get answer using recognized speech
+            };
+            recognition.onend = function() {
+                speechButton.disabled = false;
+                speechButton.innerText = "Start Speech Recognition";
+            };
+            recognition.start();
+        }
+
+        function speakResponse(responseText) {
+            var utterance = new SpeechSynthesisUtterance(responseText);
+            synth.speak(utterance);
+        }
+
+        function clearResponse() {
+            var responseDiv = document.getElementById('response');
+            responseDiv.innerHTML = '';
+            if (recognition) {
+                recognition.abort(); // Stop speech recognition
+            }
+            synth.cancel(); // Stop speech synthesis
+        }
+    </script>
+</body>
+</html>
