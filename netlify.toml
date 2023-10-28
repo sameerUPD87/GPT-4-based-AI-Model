@@ -6,4 +6,4 @@
   FLASK_ENV = "production"  # Set the Flask environment to production
 
 [build.publish]
-  directory = "static"  # The directory where Netlify will look for static assets
+  directory = "templates"  # The directory where Netlify will look for static assets
